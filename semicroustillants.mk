@@ -5,4 +5,8 @@ PRODUCT_DEVICE:= semicroustillants
 PRODUCT_BRAND:= Android
 PRODUCT_MODEL:= Android
 
-DEVICE_PACKAGE_OVERLAYS:=device/utbm/semi-croustillants/overlay
+DEVICE_PACKAGE_OVERLAYS:=device/utbm/semicroustillants/overlay
+
+PRODUCT_COPY_FILES := out/target/product/semicroustillants/system/media
+
+
