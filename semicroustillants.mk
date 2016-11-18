@@ -7,6 +7,6 @@ PRODUCT_MODEL:= Android
 
 DEVICE_PACKAGE_OVERLAYS:=device/utbm/semicroustillants/overlay
 
-PRODUCT_COPY_FILES := out/target/product/semicroustillants/system/media
+PRODUCT_COPY_FILES := device/utbm/semicroustillants/bootanimation.zip:/system/media
 
 
