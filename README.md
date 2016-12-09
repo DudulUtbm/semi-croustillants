@@ -13,3 +13,8 @@ TODO :
 HELP :
 on peut trouver des external de Android.mk dans "external"
 exemples interessants dans devices
+
+Android app : 
+movie, tv, music -> metadonnées 
+-> lecture
+-> vignettes
