@@ -9,9 +9,9 @@ LOCAL_SRC_FILES:= \
  os/linux_usbfs.c
 
 LOCAL_C_INCLUDES += \
-external/libusb/ \
-external/libusb/libusb/ \
-external/libusb/libusb/os
+device/utbm/semicroustillants/libusb/ \
+device/utbm/semicroustillants/libusb/libusb/ \
+device/utbm/semicroustillants/libusb/libusb/os
 
 LOCAL_MODULE:= libusb
 LOCAL_MODULE_TAGS:= optional

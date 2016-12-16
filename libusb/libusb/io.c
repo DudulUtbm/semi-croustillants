@@ -31,9 +31,10 @@
 #include <sys/time.h>
 #endif
 
+/** we don't need it
 #ifdef USBI_TIMERFD_AVAILABLE
 #include <sys/timerfd.h>
-#endif
+#endif*/
 
 #include "libusbi.h"
 
@@ -1060,7 +1061,7 @@ int usbi_io_init(struct libusb_context *ctx)
 	usbi_mutex_init(&ctx->flying_transfers_lock, NULL);
 	usbi_mutex_init(&ctx->pollfds_lock, NULL);
 	usbi_mutex_init(&ctx->pollfd_modify_lock, NULL);
-	usbi_mutex_init_recursive(&ctx->events_lock, NULL);
+	//usbi_mutex_init_recursive(&ctx->events_lock, NULL);
 	usbi_mutex_init(&ctx->event_waiters_lock, NULL);
 	usbi_cond_init(&ctx->event_waiters_cond, NULL);
 	list_init(&ctx->flying_transfers);
@@ -1076,7 +1077,7 @@ int usbi_io_init(struct libusb_context *ctx)
 	r = usbi_add_pollfd(ctx, ctx->ctrl_pipe[0], POLLIN);
 	if (r < 0)
 		goto err_close_pipe;
-
+/* we don't need it
 #ifdef USBI_TIMERFD_AVAILABLE
 	ctx->timerfd = timerfd_create(usbi_backend->get_timerfd_clockid(),
 		TFD_NONBLOCK);
@@ -1092,7 +1093,7 @@ int usbi_io_init(struct libusb_context *ctx)
 		usbi_dbg("timerfd not available (code %d error %d)", ctx->timerfd, errno);
 		ctx->timerfd = -1;
 	}
-#endif
+#endif*/
 
 	return 0;
 
@@ -1114,12 +1115,13 @@ void usbi_io_exit(struct libusb_context *ctx)
 	usbi_remove_pollfd(ctx, ctx->ctrl_pipe[0]);
 	usbi_close(ctx->ctrl_pipe[0]);
 	usbi_close(ctx->ctrl_pipe[1]);
+/* we don't need it
 #ifdef USBI_TIMERFD_AVAILABLE
 	if (usbi_using_timerfd(ctx)) {
 		usbi_remove_pollfd(ctx, ctx->timerfd);
 		close(ctx->timerfd);
 	}
-#endif
+#endif*/
 	usbi_mutex_destroy(&ctx->flying_transfers_lock);
 	usbi_mutex_destroy(&ctx->pollfds_lock);
 	usbi_mutex_destroy(&ctx->pollfd_modify_lock);
@@ -1316,20 +1318,21 @@ int API_EXPORTED libusb_submit_transfer(struct libusb_transfer *transfer)
 		list_del(&itransfer->list);
 		usbi_mutex_unlock(&ctx->flying_transfers_lock);
 	}
+/* we don't need it
 #ifdef USBI_TIMERFD_AVAILABLE
 	else if (first && usbi_using_timerfd(ctx)) {
 		/* if this transfer has the lowest timeout of all active transfers,
 		 * rearm the timerfd with this transfer's timeout */
-		const struct itimerspec it = { {0, 0},
+/*		const struct itimerspec it = { {0, 0},
 			{ itransfer->timeout.tv_sec, itransfer->timeout.tv_usec * 1000 } };
 		usbi_dbg("arm timerfd for timeout in %dms (first in line)", transfer->timeout);
 		r = timerfd_settime(ctx->timerfd, TFD_TIMER_ABSTIME, &it, NULL);
 		if (r < 0)
 			r = LIBUSB_ERROR_OTHER;
 	}
-#else
+#else*/
 	(void)first;
-#endif
+//#endif
 
 out:
 	usbi_mutex_unlock(&itransfer->lock);
@@ -1376,6 +1379,7 @@ int API_EXPORTED libusb_cancel_transfer(struct libusb_transfer *transfer)
 	return r;
 }
 
+/* we don't need it
 #ifdef USBI_TIMERFD_AVAILABLE
 static int disarm_timerfd(struct libusb_context *ctx)
 {
@@ -1396,7 +1400,7 @@ static int disarm_timerfd(struct libusb_context *ctx)
  * returns 0 if there was no timeout to arm, 1 if the next timeout was armed,
  * or a LIBUSB_ERROR code on failure.
  */
-static int arm_timerfd_for_next_timeout(struct libusb_context *ctx)
+/*static int arm_timerfd_for_next_timeout(struct libusb_context *ctx)
 {
 	struct usbi_transfer *transfer;
 
@@ -1405,11 +1409,11 @@ static int arm_timerfd_for_next_timeout(struct libusb_context *ctx)
 
 		/* if we've reached transfers of infinite timeout, then we have no
 		 * arming to do */
-		if (!timerisset(cur_tv))
+		/*if (!timerisset(cur_tv))
 			return 0;
 
 		/* act on first transfer that is not already cancelled */
-		if (!(transfer->flags & USBI_TRANSFER_TIMED_OUT)) {
+		/*if (!(transfer->flags & USBI_TRANSFER_TIMED_OUT)) {
 			int r;
 			const struct itimerspec it = { {0, 0},
 				{ cur_tv->tv_sec, cur_tv->tv_usec * 1000 } };
@@ -1423,7 +1427,7 @@ static int arm_timerfd_for_next_timeout(struct libusb_context *ctx)
 
 	return 0;
 }
-#else
+#else*/
 static int disarm_timerfd(struct libusb_context *ctx)
 {
 	(void)ctx;
@@ -1434,7 +1438,7 @@ static int arm_timerfd_for_next_timeout(struct libusb_context *ctx)
 	(void)ctx;
 	return 0;
 }
-#endif
+//#endif
 
 /* Handle completion of a transfer (completion might be an error condition).
  * This will invoke the user-supplied callback function, which may end up
@@ -1826,7 +1830,7 @@ static int handle_timeouts(struct libusb_context *ctx)
 	usbi_mutex_unlock(&ctx->flying_transfers_lock);
 	return r;
 }
-
+/* we don't need it
 #ifdef USBI_TIMERFD_AVAILABLE
 static int handle_timerfd_trigger(struct libusb_context *ctx)
 {
@@ -1839,18 +1843,18 @@ static int handle_timerfd_trigger(struct libusb_context *ctx)
 	usbi_mutex_lock(&ctx->flying_transfers_lock);
 
 	/* process the timeout that just happened */
-	r = handle_timeouts_locked(ctx);
+/*	r = handle_timeouts_locked(ctx);
 	if (r < 0)
 		goto out;
 
 	/* arm for next timeout*/
-	r = arm_timerfd_for_next_timeout(ctx);
+/*	r = arm_timerfd_for_next_timeout(ctx);
 
 out:
 	usbi_mutex_unlock(&ctx->flying_transfers_lock);
 	return r;
 }
-#endif
+#endif*/
 
 /* do the actual event handling. assumes that no other thread is concurrently
  * doing the same thing. */
@@ -1921,31 +1925,31 @@ static int handle_events(struct libusb_context *ctx, struct timeval *tv)
 			r--;
 		}
 	}
-
+/* we don't need it
 #ifdef USBI_TIMERFD_AVAILABLE
 	/* on timerfd configurations, fds[1] is the timerfd */
-	if (usbi_using_timerfd(ctx) && fds[1].revents) {
+//	if (usbi_using_timerfd(ctx) && fds[1].revents) {
 		/* timerfd indicates that a timeout has expired */
-		int ret;
+/*		int ret;
 		usbi_dbg("timerfd triggered");
 
 		ret = handle_timerfd_trigger(ctx);
 		if (ret < 0) {
 			/* return error code */
-			r = ret;
+/*			r = ret;
 			goto handled;
 		} else if (r == 1) {
 			/* no more active file descriptors, nothing more to do */
-			r = 0;
+/*			r = 0;
 			goto handled;
 		} else {
 			/* more events pending...
 			 * prevent OS backend from trying to handle events on timerfd */
-			fds[1].revents = 0;
+/*			fds[1].revents = 0;
 			r--;
 		}
 	}
-#endif
+#endif*/
 
 	r = usbi_backend->handle_events(ctx, fds, nfds, r);
 	if (r)
@@ -2192,13 +2196,13 @@ int API_EXPORTED libusb_handle_events_locked(libusb_context *ctx,
  */
 int API_EXPORTED libusb_pollfds_handle_timeouts(libusb_context *ctx)
 {
-#if defined(USBI_TIMERFD_AVAILABLE)
+/*#if defined(USBI_TIMERFD_AVAILABLE)
 	USBI_GET_CONTEXT(ctx);
 	return usbi_using_timerfd(ctx);
-#else
+#else*/
 	(void)ctx;
 	return 0;
-#endif
+//#endif
 }
 
 /** \ingroup poll
