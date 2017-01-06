@@ -98,8 +98,8 @@
 /* Use POSIX Threads */
 #define THREADS_POSIX 1
 
-/* timerfd headers NONavailable 
-#define USBI_TIMERFD_AVAILABLE 1 */
+/* timerfd headers available */
+#define USBI_TIMERFD_AVAILABLE 1
 
 /* Version number of package */
 #define VERSION "1.0.9"
